@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
-  APP_REPO_URL,
   AUTHOR_URL,
   CACHE_TTL,
   loadReleases,
@@ -384,7 +383,7 @@ function App() {
             <div className="mb-4 flex items-center gap-4">
               <img
                 className="size-24 rounded-xl"
-                src={image("young-boy-studio.png")}
+                src={image("young-boy-studio.svg")}
                 alt="Young Boy Studio, a curious boy and a star"
                 loading="lazy"
               />
@@ -406,16 +405,10 @@ function App() {
               <a className="underline underline-offset-4" href={AUTHOR_URL}>
                 Young Boy Studio · @hotrungnhan ↗
               </a>
-              <a className="underline underline-offset-4" href={APP_REPO_URL}>
-                App repository ↗
-              </a>
               <a className="underline underline-offset-4" href={REPO_URL}>
                 Website & public releases ↗
               </a>
             </div>
-            <p className="mt-2 text-[10px] text-muted">
-              The app repository is currently private.
-            </p>
           </div>
         </section>
         <section

@@ -1,6 +1,6 @@
 # OC Pet
 
-<img src="public/images/young-boy-studio.png" width="160" alt="Young Boy Studio" />
+<img src="public/images/young-boy-studio.svg" width="160" alt="Young Boy Studio" />
 
 **A little company. A happier desktop.**
 
@@ -22,7 +22,7 @@ OC Pet is a desktop companion for macOS and Windows. Meet Clover the Cow, Pip th
 
 ## The maker and future paid assets
 
-Made by **Young Boy Studio** ([studio artwork](public/images/young-boy-studio.png)) · [@hotrungnhan](https://github.com/hotrungnhan). The [app repository](https://github.com/hotrungnhan/oc-pet) is currently private; this repository hosts the public website and releases.
+Made by **Young Boy Studio** ([studio artwork](public/images/young-boy-studio.svg)) · [@hotrungnhan](https://github.com/hotrungnhan). The [app repository](https://github.com/hotrungnhan/oc-pet) is currently private; this repository hosts the public website and releases.
 
 OC Pet may offer paid assets in the future, and some currently free assets may become paid. Its maker needs food and water too. If that day comes, I hope you’ll keep supporting this little project. Thanks for giving it a home. ♡
 
