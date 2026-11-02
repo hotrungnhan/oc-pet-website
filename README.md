@@ -18,6 +18,12 @@ OC Pet is a desktop companion for macOS and Windows. Meet Clover the Cow, Pip th
 
 **File drops:** by default, dropping a valid regular file on the pet moves it to Trash / Recycle Bin. Disable file cleanup in Config for pretend snacks that keep originals.
 
+## The maker and future paid assets
+
+Made by [@hotrungnhan](https://github.com/hotrungnhan). The [app repository](https://github.com/hotrungnhan/oc-pet) is currently private; this repository hosts the public website and releases.
+
+OC Pet may offer paid assets in the future, and some currently free assets may become paid. Its maker needs food and water too. If that day comes, I hope you’ll keep supporting this little project. Thanks for giving it a home. ♡
+
 ## Install
 
 Get the installer for your platform from [GitHub Releases](https://github.com/hotrungnhan/oc-pet-website/releases). macOS and Windows releases may have different versions; the website finds the newest published installer for each platform.
@@ -29,7 +35,7 @@ These are development builds. Windows hardware validation is still in progress. 
 
 ## Website development
 
-This public repository contains the **React + Vite landing page**, screenshots, original character images, and public app releases. The desktop app is developed in a separate repository.
+This public repository contains the **React + TypeScript + Vite + Tailwind CSS landing page**, screenshots, original character images, and public app releases. The desktop app is developed in a separate repository.
 
 Requires Node.js 24 and npm.
 
@@ -41,13 +47,19 @@ npm run build
 npm run preview
 ```
 
-Website content is in `src/main.jsx`, styling in `src/style.css`, and images in `public/images/`. Download discovery is in `src/releases.js`. It uses GitHub’s public releases API without credentials, excludes drafts/prereleases, and falls back to the Releases page if the API is unavailable or rate limited.
+Website content is in `src/main.tsx`, styling in `src/style.css`, and images in `public/images/`. Download discovery is in `src/releases.ts`. It reads GitHub’s public releases API without credentials, excludes drafts/prereleases, and selects installers independently per platform. Responses and ETags are cached in localStorage for 15 minutes. Expired entries are revalidated with If-None-Match; saved downloads remain usable if GitHub is offline or rate limited. Checks run on page load, every 15 minutes while visible, and when the browser regains focus or goes online. If storage is blocked, downloads still work without caching. Without cached data, failures fall back to the Releases page.
+
+The layout uses Tailwind CSS 4 through `@tailwindcss/vite`, following the [current Vite setup](https://tailwindcss.com/docs/installation/using-vite). Theme colors are CSS variables in `src/style.css`. Dark mode follows the system on first visit; the theme toggle persists the visitor’s preference. Mobile presents a compact pet picker and download cards, with extended feature copy and the settings screenshot reserved for larger screens.
 
 ## GitHub Pages
 
 Pushes to `main` run `.github/workflows/deploy.yml`: install locked dependencies, test release selection, build the site, and deploy `dist/` to GitHub Pages. Pages must use **GitHub Actions** as its publishing source. `vite.config.js` sets the project path to `/oc-pet-website/`; update it and the metadata in `index.html` if you rename the repository or add a custom domain.
 
 Deployment follows [Vite’s GitHub Pages guide](https://vite.dev/guide/static-deploy#github-pages) and [GitHub’s custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+
+## Automated app releases
+
+The private app repository has a tag-triggered release workflow. A matching `vMAJOR.MINOR.PATCH` tag builds and tests both installers on a macOS GitHub runner, then publishes them here with SHA-256 checksums. No website rebuild is needed. Manual workflow runs build artifacts for validation without publishing a release. See `docs/RELEASING.md` in the app repository for credential setup and tagging instructions.
 
 ## Publishing app updates
 
