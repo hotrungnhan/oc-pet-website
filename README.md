@@ -1,5 +1,7 @@
 # OC Pet
 
+<img src="public/images/young-boy-studio.png" width="160" alt="Young Boy Studio" />
+
 **A little company. A happier desktop.**
 
 OC Pet is a desktop companion for macOS and Windows. Meet Clover the Cow, Pip the Rabbit, Mochi the Otter, Biscuit the Dog, and Miso the Cat: five little personalities that grow alongside your day.
@@ -20,7 +22,7 @@ OC Pet is a desktop companion for macOS and Windows. Meet Clover the Cow, Pip th
 
 ## The maker and future paid assets
 
-Made by [@hotrungnhan](https://github.com/hotrungnhan). The [app repository](https://github.com/hotrungnhan/oc-pet) is currently private; this repository hosts the public website and releases.
+Made by **Young Boy Studio** ([studio artwork](public/images/young-boy-studio.png)) · [@hotrungnhan](https://github.com/hotrungnhan). The [app repository](https://github.com/hotrungnhan/oc-pet) is currently private; this repository hosts the public website and releases.
 
 OC Pet may offer paid assets in the future, and some currently free assets may become paid. Its maker needs food and water too. If that day comes, I hope you’ll keep supporting this little project. Thanks for giving it a home. ♡
 
@@ -78,3 +80,7 @@ Website code is MIT. Original OC Pet character artwork is CC0-1.0; see [image at
 ## Release-note template
 
 For manual releases, copy [the release template](.github/RELEASE_TEMPLATE.md) into the release description and replace `{{VERSION}}` and `{{CHANGES}}`. Automated releases render the app repository’s copy of this template using public change notes from `docs/releases/<version>.md` before publishing. The template includes installer details, checksum commands, platform limitations, and the maker’s note.
+
+## Optional app analytics
+
+Analytics-capable desktop releases ask for consent before initializing GameAnalytics. Not now or closing the dialog keeps it off. Config can disable it later; restarting is required to enable again after shutdown. Reports use pseudonymous random installation IDs, not complete anonymity. GameAnalytics receives usage/session, platform/device and connection/IP information. OC Pet does not send names, files, file contents, foreground app names, or account details. Previously queued events may finish during shutdown. See the [website privacy section](https://hotrungnhan.github.io/oc-pet-website/#privacy). The website itself does not load GameAnalytics. Studio branding is separate from the CC0 character library.

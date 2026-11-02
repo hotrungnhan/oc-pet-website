@@ -2,6 +2,8 @@
 
 A little company. A happier desktop.
 
+Made by **Young Boy Studio**.
+
 ## What’s new
 
 {{CHANGES}}

@@ -381,7 +381,18 @@ function App() {
         </section>
         <section className="shell pb-10 md:pb-16">
           <div className="rounded-xl border border-line bg-panel p-5 md:p-8">
-            <p className="eyebrow mb-3">A NOTE FROM THE MAKER</p>
+            <div className="mb-4 flex items-center gap-4">
+              <img
+                className="size-24 rounded-xl"
+                src={image("young-boy-studio.png")}
+                alt="Young Boy Studio, a curious boy and a star"
+                loading="lazy"
+              />
+              <div>
+                <p className="eyebrow mb-2">A NOTE FROM THE MAKER</p>
+                <p className="text-lg font-semibold">Young Boy Studio</p>
+              </div>
+            </div>
             <h2 className="text-xl md:text-2xl">
               Little pets. A human behind them.
             </h2>
@@ -393,7 +404,7 @@ function App() {
             </p>
             <div className="mt-4 flex flex-wrap gap-4 text-xs">
               <a className="underline underline-offset-4" href={AUTHOR_URL}>
-                Made by @hotrungnhan ↗
+                Young Boy Studio · @hotrungnhan ↗
               </a>
               <a className="underline underline-offset-4" href={APP_REPO_URL}>
                 App repository ↗
@@ -407,7 +418,10 @@ function App() {
             </p>
           </div>
         </section>
-        <section className="shell pb-10 md:grid md:grid-cols-2 md:gap-16 md:pb-16">
+        <section
+          id="privacy"
+          className="shell pb-10 md:grid md:grid-cols-2 md:gap-16 md:pb-16"
+        >
           <h2 className="mb-4 text-2xl">A few little details.</h2>
           <div>
             {[
@@ -416,11 +430,22 @@ function App() {
                 "Valid regular files dropped on your pet move to Trash / Recycle Bin by default. Disable file cleanup in Config for pretend snacks that keep originals.",
               ],
               [
+                "What about analytics?",
+                "Usage statistics are optional and off until you agree. GameAnalytics uses a persistent random ID and receives usage, platform, connection/IP and device information, so data is pseudonymous rather than fully anonymous. We do not send names, files, file contents, foreground app names or account details. Choose Not now on first launch, or turn statistics off in Config. Disabling stops new measurements and shuts down analytics; already queued events may finish. Restart the app to enable analytics again after disabling. Downloads without configured analytics do not send usage statistics.",
+              ],
+              [
                 "Does my pet need an account?",
                 "No account is required. Pet progress and settings stay on your computer.",
               ],
             ].map(([q, a]) => (
-              <details className="border-b border-line py-3" key={q}>
+              <details
+                className="border-b border-line py-3"
+                key={q}
+                open={
+                  q === "What about analytics?" &&
+                  window.location.hash === "#privacy"
+                }
+              >
                 <summary className="cursor-pointer text-xs font-semibold">
                   {q}
                 </summary>
@@ -437,7 +462,10 @@ function App() {
         </section>
       </main>
       <footer className="shell flex flex-wrap items-center justify-between gap-4 border-t border-line py-6 text-[11px] text-muted">
-        <span>OC Pet · A small friend. A softer workday.</span>
+        <span>OC Pet · Young Boy Studio</span>
+        <a href="https://www.gameanalytics.com/trust/privacy-notice">
+          GameAnalytics privacy ↗
+        </a>
         <a href={AUTHOR_URL}>@hotrungnhan ↗</a>
       </footer>
     </>
