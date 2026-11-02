@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { copy, type Language } from "./i18n";
+import { detectPlatform, type Platform } from "./platform";
 import {
-  AUTHOR_URL,
   CACHE_TTL,
   loadReleases,
   readCache,
@@ -11,43 +12,14 @@ import {
   type ReleaseResult,
 } from "./releases";
 import "./style.css";
-const image = (name: string) => `${import.meta.env.BASE_URL}images/${name}`;
+const base = import.meta.env.BASE_URL;
+const image = (name: string) => `${base}images/${name}`;
 const pets = [
-  {
-    id: "cow",
-    name: "Clover",
-    species: "Cow",
-    color: "#e8edda",
-    note: "A little countryside calm.",
-  },
-  {
-    id: "rabbit",
-    name: "Pip",
-    species: "Rabbit",
-    color: "#f3e4e8",
-    note: "Small paws. Big personality.",
-  },
-  {
-    id: "otter",
-    name: "Mochi",
-    species: "Otter",
-    color: "#e0ebed",
-    note: "Your very own work buddy.",
-  },
-  {
-    id: "dog",
-    name: "Biscuit",
-    species: "Dog",
-    color: "#f4e8d2",
-    note: "Always happy to see you.",
-  },
-  {
-    id: "cat",
-    name: "Miso",
-    species: "Cat",
-    color: "#e9e3f0",
-    note: "A softer kind of coworker.",
-  },
+  { id: "cow", name: "Clover", color: "#e8edda" },
+  { id: "rabbit", name: "Pip", color: "#f3e4e8" },
+  { id: "otter", name: "Mochi", color: "#e0ebed" },
+  { id: "dog", name: "Biscuit", color: "#f4e8d2" },
+  { id: "cat", name: "Miso", color: "#e9e3f0" },
 ];
 function storage() {
   try {
@@ -56,7 +28,212 @@ function storage() {
     return undefined;
   }
 }
+function initialLanguage(): Language {
+  const query = new URLSearchParams(location.search).get("lang");
+  if (query === "vi" || query === "en") return query;
+  try {
+    const saved = storage()?.getItem("oc-pet-language");
+    if (saved === "vi" || saved === "en") return saved;
+  } catch {
+    /* Blocked browser storage does not block language selection. */
+  }
+  return navigator.language.toLowerCase().startsWith("vi") ? "vi" : "en";
+}
+function Chevron() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden="true"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  );
+}
+function GithubIcon() {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+    >
+      <path d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.08c-3.12.68-3.78-1.33-3.78-1.33-.5-1.3-1.25-1.64-1.25-1.64-1.02-.7.08-.68.08-.68 1.13.08 1.73 1.16 1.73 1.16 1 1.72 2.62 1.22 3.26.93.1-.73.39-1.22.71-1.5-2.49-.28-5.1-1.24-5.1-5.54 0-1.23.44-2.23 1.16-3.02-.12-.28-.5-1.43.11-2.98 0 0 .95-.3 3.08 1.15A10.7 10.7 0 0 1 12 6.18c.95 0 1.9.13 2.8.38 2.13-1.45 3.08-1.15 3.08-1.15.62 1.55.23 2.7.12 2.98.72.79 1.15 1.8 1.15 3.02 0 4.31-2.62 5.25-5.12 5.53.4.35.76 1.03.76 2.08v3.07c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z" />
+    </svg>
+  );
+}
+function DownloadButton({
+  language,
+  result,
+  busy,
+  failed,
+}: {
+  language: Language;
+  result: ReleaseResult | null;
+  busy: boolean;
+  failed: boolean;
+}) {
+  const t = copy[language];
+  const [platform] = useState<Platform>(() => detectPlatform(navigator));
+  const [open, setOpen] = useState(false);
+  const container = useRef<HTMLDivElement>(null);
+  const toggle = useRef<HTMLButtonElement>(null);
+  const menu = useRef<HTMLDivElement>(null);
+  const labels = { mac: "macOS", windows: "Windows" };
+  const file = platform === "unsupported" ? null : result?.downloads[platform];
+  const title =
+    platform === "unsupported"
+      ? t.unsupported
+      : file
+        ? `${t.download} ${labels[platform]}`
+        : busy
+          ? t.checking
+          : `${labels[platform]} · ${t.unavailable}`;
+  useEffect(() => {
+    if (!open) return;
+    const closeOutside = (event: PointerEvent) => {
+      if (!container.current?.contains(event.target as Node)) setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    menu.current
+      ?.querySelector<HTMLElement>('[role="menuitem"]:not(:disabled)')
+      ?.focus();
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, [open]);
+  return (
+    <div
+      className="mt-6"
+      ref={container}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+          setOpen(false);
+      }}
+    >
+      <div className="relative inline-flex max-w-full rounded-xl bg-action text-action-ink">
+        {file ? (
+          <a className="download-main" href={file.url}>
+            {title}
+          </a>
+        ) : (
+          <button className="download-main cursor-default opacity-80" disabled>
+            {title}
+          </button>
+        )}
+        <button
+          ref={toggle}
+          className="download-toggle"
+          aria-label={t.more}
+          aria-expanded={open}
+          aria-haspopup="menu"
+          aria-controls="download-menu"
+          onClick={() => setOpen(!open)}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setOpen(true);
+            }
+          }}
+        >
+          <Chevron />
+        </button>
+        {open && (
+          <div
+            id="download-menu"
+            ref={menu}
+            role="menu"
+            aria-label={t.more}
+            className="download-menu"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                setOpen(false);
+                toggle.current?.focus();
+              }
+              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                const items = [
+                  ...event.currentTarget.querySelectorAll<HTMLElement>(
+                    '[role="menuitem"]:not(:disabled)',
+                  ),
+                ];
+                const current = items.indexOf(
+                  document.activeElement as HTMLElement,
+                );
+                items[
+                  (current +
+                    (event.key === "ArrowDown" ? 1 : -1) +
+                    items.length) %
+                    items.length
+                ]?.focus();
+              }
+            }}
+          >
+            <p className="px-3 pb-2 text-[10px] font-semibold tracking-wide text-muted">
+              {t.other}
+            </p>
+            {(["mac", "windows"] as const)
+              .filter((key) => key !== platform)
+              .map((key) => {
+                const download = result?.downloads[key];
+                return download ? (
+                  <a
+                    key={key}
+                    role="menuitem"
+                    className="download-option"
+                    href={download.url}
+                    onClick={() => setOpen(false)}
+                  >
+                    <span>{labels[key]}</span>
+                    <small>{download.version} ↓</small>
+                  </a>
+                ) : (
+                  <button
+                    key={key}
+                    role="menuitem"
+                    className="download-option w-full text-left opacity-60"
+                    disabled
+                  >
+                    <span>{labels[key]}</span>
+                    <small>{t.comingSoon}</small>
+                  </button>
+                );
+              })}
+            <a
+              role="menuitem"
+              className="download-option mt-1 border-t border-line pt-3 text-xs"
+              href={RELEASES_URL}
+              onClick={() => setOpen(false)}
+            >
+              {t.allReleases}
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+        )}
+      </div>
+      <p className="mt-2.5 min-h-4 text-[11px] text-muted" role="status">
+        {file
+          ? `${file.version} · ${(file.size / 1024 / 1024).toFixed(1)} MB`
+          : t.noAccount}
+      </p>
+      {(result?.stale || failed) && (
+        <p className="mt-1 max-w-xs text-[10px] text-muted">
+          {result?.stale ? t.stale : t.failed}
+        </p>
+      )}
+      {platform === "mac" && (
+        <p className="mt-1 text-[10px] text-muted">{t.unsigned}</p>
+      )}
+    </div>
+  );
+}
 function App() {
+  const [language, setLanguage] = useState<Language>(initialLanguage);
+  const t = copy[language];
   const [selected, setSelected] = useState(pets[0]);
   const [dark, setDark] = useState(
     document.documentElement.classList.contains("dark"),
@@ -71,9 +248,46 @@ function App() {
         }
       : null;
   });
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState(false);
+  const [busy, setBusy] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const legacyPrivacy =
+    location.hash === "#privacy" &&
+    !/\/(?:terms|privacy)\.html$/.test(location.pathname);
+  const page = /\/terms(?:\.html)?\/?$/.test(location.pathname)
+    ? "terms"
+    : /\/privacy(?:\.html)?\/?$/.test(location.pathname) || legacyPrivacy
+      ? "privacy"
+      : "home";
+  const link = (name: "home" | "terms" | "privacy") =>
+    `${base}${name === "home" ? "" : `${name}.html`}?lang=${language}`;
   useEffect(() => {
+    document.documentElement.lang = language;
+    const address = new URL(location.href);
+    if (legacyPrivacy) {
+      address.pathname = `${base}privacy.html`;
+      address.hash = "";
+    }
+    address.searchParams.set("lang", language);
+    history.replaceState(null, "", address);
+    document.title = `${page === "terms" ? t.terms : page === "privacy" ? t.privacy : "OC Pet"} · Young Boy Studio`;
+    document
+      .querySelector('meta[name="description"]')
+      ?.setAttribute(
+        "content",
+        page === "home"
+          ? t.intro
+          : page === "terms"
+            ? t.termsIntro
+            : t.privacyIntro,
+      );
+    try {
+      storage()?.setItem("oc-pet-language", language);
+    } catch {
+      /* Language also works without storage. */
+    }
+  }, [language, page, t]);
+  useEffect(() => {
+    if (page !== "home") return;
     let alive = true;
     let pending = false;
     async function refresh() {
@@ -84,10 +298,10 @@ function App() {
         const next = await loadReleases({ storage: storage() });
         if (alive) {
           setResult(next);
-          setError(false);
+          setFailed(false);
         }
       } catch {
-        if (alive) setError(true);
+        if (alive) setFailed(true);
       } finally {
         pending = false;
         if (alive) setBusy(false);
@@ -103,7 +317,7 @@ function App() {
       window.removeEventListener("focus", refresh);
       window.removeEventListener("online", refresh);
     };
-  }, []);
+  }, [page]);
   function toggleTheme() {
     const next = !dark;
     setDark(next);
@@ -111,355 +325,176 @@ function App() {
     try {
       storage()?.setItem("oc-pet-theme", next ? "dark" : "light");
     } catch {
-      /* Theme still works without persistence. */
+      /* Theme remains usable. */
     }
   }
   return (
     <>
       <a className="sr-only focus:not-sr-only" href="#main">
-        Skip to content
+        {t.skip}
       </a>
-      <header className="shell flex h-20 items-center justify-between gap-3 md:h-24">
+      <header className="shell flex h-20 items-center justify-between gap-2">
         <a
-          href="#"
-          className="flex items-center gap-2 text-2xl font-bold tracking-tight"
+          href={link("home")}
+          className="flex shrink-0 items-center gap-1 text-lg font-bold tracking-tight"
         >
-          <img className="size-10" src={image("cow.svg")} alt="" />
-          OC Pet<span className="hidden text-sage sm:inline">✳</span>
+          <img src={image("cow.svg")} className="size-8" alt="" />
+          OC Pet
         </a>
-        <nav
-          aria-label="Main navigation"
-          className="flex items-center gap-3 text-sm md:gap-7"
-        >
-          <a className="hidden md:block" href="#companions">
-            Meet the pets
-          </a>
-          <a className="hidden md:block" href={AUTHOR_URL}>
-            Meet the maker ↗
-          </a>
+        <nav aria-label={t.nav} className="flex items-center gap-1 sm:gap-3">
+          <select
+            className="nav-select"
+            aria-label={t.language}
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as Language)}
+          >
+            <option value="en">EN</option>
+            <option value="vi">VI</option>
+          </select>
           <button
             className="theme-toggle"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${dark ? "light" : "dark"} theme`}
+            aria-label={dark ? t.light : t.dark}
             aria-pressed={dark}
+            onClick={toggleTheme}
           >
             {dark ? "☀" : "☾"}
           </button>
-          <a
-            className="rounded-lg border border-line px-3 py-2 text-xs font-semibold md:px-5 md:text-sm"
-            href="#download"
-          >
-            Get OC Pet ↓
+          <a href={REPO_URL} className="github-button">
+            <GithubIcon />
+            <span>{t.github}</span>
           </a>
         </nav>
       </header>
-      <main id="main">
-        <section className="shell grid items-center gap-7 py-7 md:grid-cols-2 md:gap-16 md:py-20">
-          <div>
-            <p className="eyebrow">A SMALL FRIEND FOR YOUR EVERYDAY</p>
-            <h1 className="text-[2.65rem] leading-[1.12] tracking-[-2px] md:text-6xl">
-              A little company.
-              <br />A <em>happier</em> desktop.
-            </h1>
-            <p className="mt-4 max-w-md text-sm leading-7 text-muted md:mt-6 md:text-base">
-              A tiny companion for your screen. Happy hops, sleepy afternoons,
-              and a little warmth for your workday.
-            </p>
-            <a className="button mt-6" href="#download">
-              Find your desktop friend <span>↓</span>
-            </a>
-            <p className="mt-3 text-[11px] text-muted">
-              macOS & Windows · No account needed
-            </p>
-          </div>
-          <div
-            className="pet-stage"
-            style={{ backgroundColor: selected.color }}
-          >
-            <div className="flex justify-between border-b border-black/10 px-4 py-3 text-[9px] text-[#657052]">
-              <span>● ● ●</span>
-              <span>your little desktop corner</span>
-              <span>✳</span>
-            </div>
-            <span className="absolute right-6 top-14 text-5xl text-[#a3af78]">
-              ✳
-            </span>
-            <p className="speech" aria-live="polite">
-              {selected.name} is happy you’re here ♡
-            </p>
-            <img
-              className="stage-pet"
-              src={image(`${selected.id}.svg`)}
-              alt={`${selected.name} the ${selected.species.toLowerCase()}`}
-            />
-            <div className="absolute inset-x-0 bottom-0 flex justify-between border-t border-black/10 px-4 py-3 text-[9px] text-[#657052]">
-              <span>● Currently: making your day</span>
-              <span>♡ +1</span>
-            </div>
-          </div>
-        </section>
-        <section id="companions" className="shell py-8 md:py-16">
-          <div className="mb-6 flex items-end justify-between">
-            <div>
-              <p className="eyebrow hidden md:block">
-                THE DESKTOP FRIEND GROUP
-              </p>
-              <h2 className="text-2xl md:text-4xl">
-                Five faces. <em>Your favorite.</em>
-              </h2>
-            </div>
-            <p className="hidden text-xs text-muted md:block">
-              15 breeds. 10 growth appearances. A friend for you.
-            </p>
-          </div>
-          <div className="grid grid-cols-5 gap-2 md:gap-5">
-            {pets.map((pet) => (
-              <button
-                className="group min-w-0 text-left"
-                key={pet.id}
-                onClick={() => setSelected(pet)}
-                aria-pressed={selected.id === pet.id}
-                aria-label={`Preview ${pet.name}`}
-              >
+      <main id="main" className="shell">
+        {page === "home" ? (
+          <>
+            <section className="hero">
+              <div className="hero-copy">
+                <p className="eyebrow">{t.eyebrow}</p>
+                <h1>
+                  {t.headline}
+                  <br />
+                  <em>{t.headlineAccent}</em>
+                </h1>
+                <p className="mt-4 max-w-sm text-sm leading-7 text-muted">
+                  {t.intro}
+                </p>
+                <DownloadButton
+                  language={language}
+                  result={result}
+                  busy={busy}
+                  failed={failed}
+                />
+              </div>
+              <div className="companion">
                 <div
-                  className={`pet-tile ${selected.id === pet.id ? "ring-2 ring-sage ring-offset-2 ring-offset-paper" : ""}`}
-                  style={{ backgroundColor: pet.color }}
+                  className="pet-stage"
+                  style={{ backgroundColor: selected.color }}
                 >
-                  <span className="hidden text-[9px] tracking-widest text-[#657052] md:block">
-                    {pet.species.toUpperCase()}
-                  </span>
+                  <p className="speech" aria-live="polite">
+                    {selected.name} {t.greeting} ♡
+                  </p>
                   <img
-                    className="mx-auto w-full transition-transform group-hover:-translate-y-1"
-                    src={image(`${pet.id}.svg`)}
-                    alt=""
-                    loading="lazy"
+                    className="stage-pet"
+                    src={image(`${selected.id}.svg`)}
+                    alt={selected.name}
                   />
                 </div>
-                <h3 className="mt-2 truncate text-center text-[10px] font-semibold md:mt-4 md:text-left md:text-base">
-                  {pet.name}
-                </h3>
-                <p className="mt-1 hidden text-[11px] text-muted md:block">
-                  {pet.note}
-                </p>
-              </button>
-            ))}
-          </div>
-        </section>
-        <section className="border-y border-line bg-panel">
-          <div className="shell grid gap-10 py-10 md:grid-cols-2 md:items-center md:gap-16 md:py-16">
-            <div>
-              <p className="eyebrow hidden md:block">
-                A LITTLE LIFE, ALONGSIDE YOURS
-              </p>
-              <h2 className="text-2xl md:text-4xl">
-                Small moments.
-                <br className="hidden md:block" /> <em>Good company.</em>
-              </h2>
-              <div className="mt-5 flex flex-wrap gap-2 md:hidden">
-                {[
-                  "Feed & grow",
-                  "Naps & games",
-                  "Hide & mute",
-                  "English / Tiếng Việt",
-                ].map((text) => (
-                  <span
-                    key={text}
-                    className="rounded-full border border-line px-3 py-1 text-[11px] text-muted"
-                  >
-                    {text}
-                  </span>
-                ))}
+                <div className="pet-picker" role="group" aria-label={t.pets}>
+                  {pets.map((pet) => (
+                    <button
+                      key={pet.id}
+                      aria-label={`${t.preview} ${pet.name}`}
+                      aria-pressed={selected.id === pet.id}
+                      onClick={() => setSelected(pet)}
+                      className={selected.id === pet.id ? "chosen" : ""}
+                    >
+                      <img src={image(`${pet.id}.svg`)} alt="" />
+                      <span>{pet.name}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="mt-7 hidden space-y-6 md:block">
-                {[
-                  [
-                    "01",
-                    "Watch a friendship grow",
-                    "Feed your pet, share affection, and watch it grow. Every friend keeps its own progress.",
-                  ],
-                  [
-                    "02",
-                    "Make the everyday playful",
-                    "Stretches, naps, foraging, and a little football or basketball between tasks.",
-                  ],
-                  [
-                    "03",
-                    "Settle into your space",
-                    "Adjust size and sound. Hide, mute, or use click-through when you need to focus. English and Vietnamese included.",
-                  ],
-                ].map(([n, title, copy]) => (
-                  <div className="flex gap-5" key={n}>
-                    <span className="text-sage">{n}</span>
-                    <div>
-                      <h3 className="text-sm font-semibold">{title}</h3>
-                      <p className="mt-1 max-w-sm text-xs leading-6 text-muted">
-                        {copy}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            </section>
+            <div className="feature-line">
+              {t.features.map((feature) => (
+                <span key={feature}>{feature}</span>
+              ))}
             </div>
-            <figure className="hidden rounded-xl border border-line bg-[#e5deeb] p-5 md:block dark:bg-[#393340]">
+            <section className="studio-note">
               <img
-                className="rounded-lg"
-                src={image("appearance.png")}
-                alt="OC Pet Appearance settings with pet and breed selection"
-                loading="lazy"
-              />
-              <figcaption className="mt-4 text-center text-[10px] text-muted">
-                The actual app · soft colors, familiar controls.
-              </figcaption>
-            </figure>
-          </div>
-        </section>
-        <section id="download" className="shell py-10 text-center md:py-20">
-          <p className="eyebrow hidden md:block">
-            YOUR NEW FRIEND IS A FEW CLICKS AWAY
-          </p>
-          <h2 className="text-3xl md:text-5xl">
-            Bring a little <em>company home.</em>
-          </h2>
-          <div className="mx-auto mt-6 grid max-w-3xl gap-3 sm:grid-cols-2 md:mt-9 md:gap-5">
-            {(
-              [
-                ["mac", "macOS", "DMG · Drag to Applications", "⌘"],
-                ["windows", "Windows", "EXE · Run the installer", "⊞"],
-              ] as const
-            ).map(([key, title, instruction, symbol]) => {
-              const file = result?.downloads[key];
-              return (
-                <article key={key} className="download-card">
-                  <div className="flex items-center gap-3 sm:block">
-                    <span className="text-2xl text-sage">{symbol}</span>
-                    <h3 className="font-semibold sm:mt-2">
-                      OC Pet for {title}
-                    </h3>
-                  </div>
-                  <p className="my-2 hidden text-xs text-muted sm:block">
-                    {instruction}
-                  </p>
-                  <a
-                    className="button mt-3 w-full text-xs"
-                    href={file?.url || RELEASES_URL}
-                  >
-                    {file
-                      ? `Download for ${title}`
-                      : "View downloads on GitHub"}{" "}
-                    <span>↓</span>
-                  </a>
-                  <p className="mt-2 text-[10px] text-muted">
-                    {file
-                      ? `${file.version} · ${(file.size / 1024 / 1024).toFixed(1)} MB`
-                      : busy
-                        ? "Checking releases…"
-                        : "Installers on GitHub Releases"}
-                  </p>
-                </article>
-              );
-            })}
-          </div>
-          <p role="status" className="mt-4 text-[10px] text-muted">
-            {result?.stale
-              ? "Showing saved downloads. We’ll check again when GitHub is available."
-              : error
-                ? "GitHub is unavailable. Browse releases directly."
-                : result
-                  ? `Checked ${new Date(result.checkedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} · Updates every 15 minutes`
-                  : "Checking GitHub Releases…"}
-          </p>
-          <a
-            className="mt-3 inline-block text-xs underline underline-offset-4"
-            href={RELEASES_URL}
-          >
-            All releases & notes ↗
-          </a>
-          <p className="mt-4 text-[10px] text-muted">
-            macOS builds are unsigned and not notarized.
-          </p>
-        </section>
-        <section className="shell pb-10 md:pb-16">
-          <div className="rounded-xl border border-line bg-panel p-5 md:p-8">
-            <div className="mb-4 flex items-center gap-4">
-              <img
-                className="size-24 rounded-xl"
                 src={image("young-boy-studio.svg")}
-                alt="Young Boy Studio, a curious boy and a star"
-                loading="lazy"
+                alt="Young Boy Studio"
+                className="size-20 shrink-0"
               />
               <div>
-                <p className="eyebrow mb-2">A NOTE FROM THE MAKER</p>
-                <p className="text-lg font-semibold">Young Boy Studio</p>
+                <p className="eyebrow mb-2">{t.studio}</p>
+                <p className="max-w-2xl text-xs leading-6 text-muted">
+                  {t.paid}
+                </p>
               </div>
-            </div>
-            <h2 className="text-xl md:text-2xl">
-              Little pets. A human behind them.
-            </h2>
-            <p className="mt-3 max-w-3xl text-xs leading-6 text-muted md:text-sm md:leading-7">
-              OC Pet may offer paid assets in the future, and some currently
-              free assets may become paid. Its maker needs food and water, too.
-              If that day comes, I hope you’ll keep supporting this little
-              project. Thanks for giving it a home. ♡
+            </section>
+            <p className="mb-7 max-w-2xl text-[10px] leading-5 text-muted">
+              {t.fileNote}
             </p>
-            <div className="mt-4 flex flex-wrap gap-4 text-xs">
-              <a className="underline underline-offset-4" href={AUTHOR_URL}>
-                Young Boy Studio · @hotrungnhan ↗
-              </a>
-              <a className="underline underline-offset-4" href={REPO_URL}>
-                Website & public releases ↗
-              </a>
-            </div>
-          </div>
-        </section>
-        <section
-          id="privacy"
-          className="shell pb-10 md:grid md:grid-cols-2 md:gap-16 md:pb-16"
-        >
-          <h2 className="mb-4 text-2xl">A few little details.</h2>
-          <div>
-            {[
-              [
-                "What happens when I drop a file?",
-                "Valid regular files dropped on your pet move to Trash / Recycle Bin by default. Disable file cleanup in Config for pretend snacks that keep originals.",
-              ],
-              [
-                "What about analytics?",
-                "Usage statistics are optional and off until you agree. GameAnalytics uses a persistent random ID and receives usage, platform, connection/IP and device information, so data is pseudonymous rather than fully anonymous. We do not send names, files, file contents, foreground app names or account details. Choose Not now on first launch, or turn statistics off in Config. Disabling stops new measurements and shuts down analytics; already queued events may finish. Restart the app to enable analytics again after disabling. Downloads without configured analytics do not send usage statistics.",
-              ],
-              [
-                "Does my pet need an account?",
-                "No account is required. Pet progress and settings stay on your computer.",
-              ],
-            ].map(([q, a]) => (
-              <details
-                className="border-b border-line py-3"
-                key={q}
-                open={
-                  q === "What about analytics?" &&
-                  window.location.hash === "#privacy"
-                }
-              >
-                <summary className="cursor-pointer text-xs font-semibold">
-                  {q}
-                </summary>
-                <p className="mt-2 text-xs leading-6 text-muted">{a}</p>
-              </details>
-            ))}
+          </>
+        ) : (
+          <article className="legal-copy">
             <a
-              className="mt-4 inline-block text-xs underline underline-offset-4"
-              href={`${REPO_URL}/issues`}
+              href={link("home")}
+              className="text-xs text-muted hover:text-ink"
             >
-              Report a bug ↗
+              ← {t.home}
             </a>
-          </div>
-        </section>
+            <h1 className="mt-7 text-4xl">
+              {page === "terms" ? t.terms : t.privacy}
+            </h1>
+            <p className="mt-3 text-[11px] text-muted">{t.updated}</p>
+            <p className="mt-6 text-sm leading-7 text-muted">
+              {page === "terms" ? t.termsIntro : t.privacyIntro}
+            </p>
+            {(page === "terms" ? t.termsSections : t.privacySections).map(
+              (section) => (
+                <section key={section.title}>
+                  <h2>{section.title}</h2>
+                  <p>{section.body}</p>
+                </section>
+              ),
+            )}
+            {page === "terms" ? (
+              <a
+                className="legal-reference"
+                href="https://opensource.org/license/mit"
+              >
+                {t.license} ↗
+              </a>
+            ) : (
+              <a
+                className="legal-reference"
+                href="https://www.gameanalytics.com/trust/privacy-notice"
+              >
+                {t.providerPrivacy} ↗
+              </a>
+            )}
+          </article>
+        )}
       </main>
-      <footer className="shell flex flex-wrap items-center justify-between gap-4 border-t border-line py-6 text-[11px] text-muted">
-        <span>OC Pet · Young Boy Studio</span>
-        <a href="https://www.gameanalytics.com/trust/privacy-notice">
-          GameAnalytics privacy ↗
-        </a>
-        <a href={AUTHOR_URL}>@hotrungnhan ↗</a>
+      <footer className="shell flex flex-wrap items-center justify-between gap-3 border-t border-line py-5 text-[10px] text-muted">
+        <span>© 2026 Young Boy Studio</span>
+        <div className="flex gap-5">
+          <a
+            href={link("terms")}
+            aria-current={page === "terms" ? "page" : undefined}
+          >
+            {t.terms}
+          </a>
+          <a
+            href={link("privacy")}
+            aria-current={page === "privacy" ? "page" : undefined}
+          >
+            {t.privacy}
+          </a>
+        </div>
       </footer>
     </>
   );

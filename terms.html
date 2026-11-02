@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#faf8f1" />
+    <meta
+      name="description"
+      content="Young Boy Studio terms for using the OC Pet app and website."
+    />
+    <meta property="og:title" content="Terms of Service · Young Boy Studio" />
+    <meta
+      property="og:description"
+      content="Young Boy Studio terms for using the OC Pet app and website."
+    />
+    <meta
+      property="og:image"
+      content="https://hotrungnhan.github.io/oc-pet-website/images/appearance.png"
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%images/cow.svg" />
+    <title>Terms of Service · Young Boy Studio</title>
+    <script>
+      try {
+        const theme = localStorage.getItem("oc-pet-theme");
+        if (
+          theme === "dark" ||
+          (!theme && matchMedia("(prefers-color-scheme: dark)").matches)
+        )
+          document.documentElement.classList.add("dark");
+      } catch {
+        if (matchMedia("(prefers-color-scheme: dark)").matches)
+          document.documentElement.classList.add("dark");
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

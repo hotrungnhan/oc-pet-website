@@ -1,7 +1,6 @@
 export const REPOSITORY = "hotrungnhan/oc-pet-website";
 export const REPO_URL = `https://github.com/${REPOSITORY}`;
 export const RELEASES_URL = `${REPO_URL}/releases`;
-export const AUTHOR_URL = "https://github.com/hotrungnhan";
 export const CACHE_KEY = "oc-pet-releases-v1";
 export const CACHE_TTL = 15 * 60 * 1000;
 export interface Release {
