@@ -74,3 +74,7 @@ gh release create v0.18.0 /path/to/OCPet-0.18.0.dmg /path/to/OCPet-0.18.0-setup.
 ## License
 
 Website code is MIT. Original OC Pet character artwork is CC0-1.0; see [image attribution](public/images/LICENSE.md). The app screenshot is included to demonstrate OC Pet. External fonts are served by Google Fonts (DM Sans and Lora, SIL Open Font License).
+
+## Release-note template
+
+For manual releases, copy [the release template](.github/RELEASE_TEMPLATE.md) into the release description and replace `{{VERSION}}` and `{{CHANGES}}`. Automated releases render the app repository’s copy of this template using public change notes from `docs/releases/<version>.md` before publishing. The template includes installer details, checksum commands, platform limitations, and the maker’s note.
