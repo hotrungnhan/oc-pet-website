@@ -1,0 +1,1 @@
+All generated character artwork, motion curves and synthesized sounds are original OC Pet assets dedicated to the public domain under CC0-1.0. No third-party recordings or artwork are used. Regenerate with tools/assets/generate_characters.py.
