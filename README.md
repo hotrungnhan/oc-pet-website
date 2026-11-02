@@ -13,7 +13,11 @@ Five desktop friends. Fifteen skins. Little outfits, cuddles, snacks, and playti
 - Feed, pet, play football or basketball, and grow together.
 - English & Tiếng Việt. No account needed.
 
-![OC Pet running on macOS: choose your companion and skin](public/images/macos-skins.png)
+![Animated OC Pet desktop preview](public/images/desktop-preview.png)
+
+[Explore the animated desktop demo →](https://hotrungnhan.github.io/oc-pet-website/#desktop-title)
+
+Cuddles, snack time, catch & drag, football, basketball, and quiet naps. Pick a scene or grab your little friend inside the Mac-style frame.
 
 <details>
 <summary>A peek inside the wardrobe</summary>
@@ -46,7 +50,7 @@ npm run preview
 
 Website content is in `src/main.tsx`, styling in `src/style.css`, and images in `public/images/`. Download discovery is in `src/releases.ts`. It reads GitHub’s public releases API without credentials, excludes drafts/prereleases, and selects installers independently per platform. Responses and ETags are cached in localStorage for 15 minutes. Expired entries are revalidated with If-None-Match; saved downloads remain usable if GitHub is offline or rate limited. Checks run on page load, every 15 minutes while visible, and when the browser regains focus or goes online. If storage is blocked, downloads still work without caching. Without cached data, failures fall back to the Releases page.
 
-The layout uses Tailwind CSS 4 through `@tailwindcss/vite`, following the [current Vite setup](https://tailwindcss.com/docs/installation/using-vite). Theme colors are CSS variables in `src/style.css`. Dark mode follows the system on first visit; the theme toggle persists the visitor’s preference. The landing page includes an animated pet demo with 15 actual skin previews and pet/feed/play reactions, plus a three-image gallery of real macOS app captures with an accessible native-dialog lightbox. Motion respects the reduced-motion preference. An OS-aware split download button sits in the hero. Its chevron lists other platforms. Linux/mobile/unknown platforms show Unsupported while retaining the platform menu. Supported platforms without a published installer show Coming soon rather than an invented download URL. English/Vietnamese copy is in `src/i18n.ts`; the language selector persists the choice and keeps it in navigation URLs. OS detection is in `src/platform.ts`.
+The layout uses Tailwind CSS 4 through `@tailwindcss/vite`, following the [current Vite setup](https://tailwindcss.com/docs/installation/using-vite). Theme colors are CSS variables in `src/style.css`. Dark mode follows the system on first visit; the theme toggle persists the visitor’s preference. The landing page includes an animated Mac-style desktop with six illustrative interaction scenes, scene selection, pause/play, and pointer dragging. It uses the original pet artwork and CSS animation; it is labeled as an animated preview. Scene cycling pauses offscreen and defaults off for reduced-motion preferences. The hero has 15 actual skin previews and pet/feed/play reactions. An expandable section holds the three-image app settings gallery and native-dialog lightbox. Motion respects the reduced-motion preference. An OS-aware split download button sits in the hero. Its chevron lists other platforms. Linux/mobile/unknown platforms show Unsupported while retaining the platform menu. Supported platforms without a published installer show Coming soon rather than an invented download URL. English/Vietnamese copy is in `src/i18n.ts`; the language selector persists the choice and keeps it in navigation URLs. OS detection is in `src/platform.ts`.
 
 ## GitHub Pages
 

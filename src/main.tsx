@@ -11,6 +11,7 @@ import {
   selectDownloads,
   type ReleaseResult,
 } from "./releases";
+import { DesktopDemo } from "./DesktopDemo";
 import "./style.css";
 const base = import.meta.env.BASE_URL;
 const image = (name: string) => `${base}images/${name}`;
@@ -475,7 +476,11 @@ function App() {
                 <span key={feature}>{feature}</span>
               ))}
             </div>
-            <MacGallery language={language} />
+            <DesktopDemo language={language} />
+            <details className="customization-gallery">
+              <summary>{t.customization}</summary>
+              <MacGallery language={language} />
+            </details>
             <section className="studio-note">
               <img
                 src={image("young-boy-studio.svg")}
