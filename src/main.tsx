@@ -15,11 +15,11 @@ import "./style.css";
 const base = import.meta.env.BASE_URL;
 const image = (name: string) => `${base}images/${name}`;
 const pets = [
-  { id: "cow", name: "Clover", color: "#e8edda" },
-  { id: "rabbit", name: "Pip", color: "#f3e4e8" },
-  { id: "otter", name: "Mochi", color: "#e0ebed" },
-  { id: "dog", name: "Biscuit", color: "#f4e8d2" },
-  { id: "cat", name: "Miso", color: "#e9e3f0" },
+  { id: "cow", name: "Clover", color: "#e8edda", skins: ["dairy", "highland", "zebu"] },
+  { id: "rabbit", name: "Pip", color: "#f3e4e8", skins: ["upright", "lop", "lionhead"] },
+  { id: "otter", name: "Mochi", color: "#e0ebed", skins: ["sea", "river", "small_clawed"] },
+  { id: "dog", name: "Biscuit", color: "#f4e8d2", skins: ["corgi", "pitbull", "poodle"] },
+  { id: "cat", name: "Miso", color: "#e9e3f0", skins: ["shorthair", "siamese", "persian"] },
 ];
 function storage() {
   try {
@@ -231,10 +231,92 @@ function DownloadButton({
     </div>
   );
 }
+type Mood = "hello" | "love" | "feed" | "play";
+function Companion({ language }: { language: Language }) {
+  const t = copy[language];
+  const [selected, setSelected] = useState(pets[0]);
+  const [skin, setSkin] = useState(0);
+  const [reaction, setReaction] = useState<{ mood: Mood; count: number }>({ mood: "hello", count: 0 });
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  function react(mood: Mood) {
+    clearTimeout(timer.current);
+    setReaction((previous) => ({ mood, count: previous.count + 1 }));
+    timer.current = setTimeout(() => setReaction((previous) => ({ ...previous, mood: "hello" })), 2200);
+  }
+  return (
+    <div className="companion">
+      <div className="pet-stage" style={{ backgroundColor: selected.color }}>
+        <span className="stage-spark spark-one" aria-hidden="true">✧</span>
+        <span className="stage-spark spark-two" aria-hidden="true">✦</span>
+        <p className="speech" aria-live="polite">
+          {reaction.mood === "hello" ? `${selected.name} ${t.greeting} ♡` : t.reactions[reaction.mood]}
+        </p>
+        <button className="pet-touch" onClick={() => react("love")} aria-label={`${t.petAction} ${selected.name}`}>
+          <img key={`${selected.id}-${skin}-${reaction.count}`} className={`stage-pet mood-${reaction.mood}`}
+            src={image(`${selected.id}-${selected.skins[skin]}.svg`)} alt={selected.name} />
+        </button>
+        {reaction.mood !== "hello" && <span key={reaction.count} className={`reaction-effect effect-${reaction.mood}`} aria-hidden="true">
+          {reaction.mood === "love" ? "♡" : reaction.mood === "feed" ? "✦" : "⚽"}
+        </span>}
+        <span className="stage-ground" aria-hidden="true" />
+      </div>
+      <div className="pet-picker" role="group" aria-label={t.pets}>
+        {pets.map((pet) => <button key={pet.id} aria-label={`${t.preview} ${pet.name}`}
+          aria-pressed={selected.id === pet.id} className={selected.id === pet.id ? "chosen" : ""}
+          onClick={() => { setSelected(pet); setSkin(0); react("hello"); }}>
+          <img src={image(`${pet.id}.svg`)} alt="" /><span>{pet.name}</span>
+        </button>)}
+      </div>
+      <div className="skin-picker" role="group" aria-label={t.skins}>
+        <span>{t.skins}</span>
+        {selected.skins.map((variant, index) => <button key={variant} aria-label={t.skinNames[variant as keyof typeof t.skinNames]}
+          aria-pressed={skin === index} onClick={() => { setSkin(index); react("hello"); }}>
+          <img src={image(`${selected.id}-${variant}.svg`)} alt="" />
+        </button>)}
+      </div>
+      <div className="demo-actions" role="group" aria-label={t.tryDemo}>
+        <button onClick={() => react("love")}><span aria-hidden="true">♡</span> {t.petAction}</button>
+        <button onClick={() => react("feed")}><span aria-hidden="true">✦</span> {t.feedAction}</button>
+        <button onClick={() => react("play")}><span aria-hidden="true">⚽</span> {t.playAction}</button>
+      </div>
+      <p className="demo-hint">{t.tryDemo}</p>
+    </div>
+  );
+}
+function MacGallery({ language }: { language: Language }) {
+  const t = copy[language];
+  const [selected, setSelected] = useState(0);
+  const frames = ["macos-skins.png", "macos-wardrobe.png", "macos-cat.png"];
+  const dialog = useRef<HTMLDialogElement>(null);
+  return (
+    <section className="mac-gallery" aria-labelledby="gallery-title">
+      <div className="gallery-heading">
+        <div><p className="eyebrow">{t.inTheWild}</p><h2 id="gallery-title">{t.galleryTitle}</h2></div>
+        <span className="mac-label"><span aria-hidden="true">●</span> {t.macCaptures}</span>
+      </div>
+      <div className="gallery-tabs" role="group" aria-label={t.screenshots}>
+        {t.galleryCaptions.map((caption, index) => <button key={index} aria-pressed={selected === index}
+          onClick={() => setSelected(index)}>{caption}</button>)}
+      </div>
+      <figure>
+        <button className="screenshot-button" onClick={() => dialog.current?.showModal()} aria-label={t.enlarge}>
+          <img key={selected} className="gallery-image" src={image(frames[selected])}
+            alt={t.galleryAlts[selected]} width="2000" height="1520" loading="lazy" />
+          <span className="enlarge-label" aria-hidden="true">↗</span>
+        </button>
+        <figcaption>{t.galleryCaptions[selected]} <span>· {t.enlarge}</span></figcaption>
+      </figure>
+      <dialog ref={dialog} className="screenshot-dialog" onClick={(event) => { if (event.target === event.currentTarget) dialog.current?.close(); }}>
+        <button className="dialog-close" autoFocus onClick={() => dialog.current?.close()} aria-label={t.close}>×</button>
+        <img src={image(frames[selected])} alt={t.galleryAlts[selected]} width="2000" height="1520" />
+      </dialog>
+    </section>
+  );
+}
 function App() {
   const [language, setLanguage] = useState<Language>(initialLanguage);
   const t = copy[language];
-  const [selected, setSelected] = useState(pets[0]);
   const [dark, setDark] = useState(
     document.documentElement.classList.contains("dark"),
   );
@@ -386,41 +468,14 @@ function App() {
                   failed={failed}
                 />
               </div>
-              <div className="companion">
-                <div
-                  className="pet-stage"
-                  style={{ backgroundColor: selected.color }}
-                >
-                  <p className="speech" aria-live="polite">
-                    {selected.name} {t.greeting} ♡
-                  </p>
-                  <img
-                    className="stage-pet"
-                    src={image(`${selected.id}.svg`)}
-                    alt={selected.name}
-                  />
-                </div>
-                <div className="pet-picker" role="group" aria-label={t.pets}>
-                  {pets.map((pet) => (
-                    <button
-                      key={pet.id}
-                      aria-label={`${t.preview} ${pet.name}`}
-                      aria-pressed={selected.id === pet.id}
-                      onClick={() => setSelected(pet)}
-                      className={selected.id === pet.id ? "chosen" : ""}
-                    >
-                      <img src={image(`${pet.id}.svg`)} alt="" />
-                      <span>{pet.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <Companion language={language} />
             </section>
             <div className="feature-line">
               {t.features.map((feature) => (
                 <span key={feature}>{feature}</span>
               ))}
             </div>
+            <MacGallery language={language} />
             <section className="studio-note">
               <img
                 src={image("young-boy-studio.svg")}

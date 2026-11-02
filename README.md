@@ -1,39 +1,34 @@
 # OC Pet
 
-<img src="public/images/young-boy-studio.svg" width="160" alt="Young Boy Studio" />
+<img src="public/images/young-boy-studio.svg" width="120" alt="Young Boy Studio" />
 
 **A little company. A happier desktop.**
 
-OC Pet is a desktop companion for macOS and Windows. Meet Clover the Cow, Pip the Rabbit, Mochi the Otter, Biscuit the Dog, and Miso the Cat: five little personalities that grow alongside your day.
+Five desktop friends. Fifteen skins. Little outfits, cuddles, snacks, and playtime. Make your Mac or Windows desktop a little cozier.
 
-[Visit the website](https://hotrungnhan.github.io/oc-pet-website/) · [Download OC Pet](https://github.com/hotrungnhan/oc-pet-website/releases) · [Report a bug](https://github.com/hotrungnhan/oc-pet-website/issues)
+[Try the interactive website](https://hotrungnhan.github.io/oc-pet-website/) · [Download](https://github.com/hotrungnhan/oc-pet-website/releases) · [Report a bug](https://github.com/hotrungnhan/oc-pet-website/issues)
 
-![OC Pet’s Appearance settings](public/images/appearance.png)
+- Meet Clover, Pip, Mochi, Biscuit, and Miso.
+- Switch skins and dress up with outfits and accessories.
+- Feed, pet, play football or basketball, and grow together.
+- English & Tiếng Việt. No account needed.
 
-## Meet your desktop friend
+![OC Pet running on macOS: choose your companion and skin](public/images/macos-skins.png)
 
-- Five species, 15 breed variants, and ten growth appearances per pet.
-- Feed, share affection, and keep independent progress for each companion.
-- Little stretches, naps, foraging moments, football, and basketball.
-- Adjustable size, sound, timed hide/mute, and click-through controls.
-- English and Vietnamese interfaces. Progress and settings are saved locally; no account is required.
+<details>
+<summary>A peek inside the wardrobe</summary>
 
-**File drops:** by default, dropping a valid regular file on the pet moves it to Trash / Recycle Bin. Disable file cleanup in Config for pretend snacks that keep originals.
+![Outfits and accessories in OC Pet on macOS](public/images/macos-wardrobe.png)
 
-## The maker and future paid assets
+</details>
 
-Made by **Young Boy Studio** ([studio artwork](public/images/young-boy-studio.svg)) · [@hotrungnhan](https://github.com/hotrungnhan). The [app repository](https://github.com/hotrungnhan/oc-pet) is currently private; this repository hosts the public website and releases.
-
-OC Pet may offer paid assets in the future, and some currently free assets may become paid. Its maker needs food and water too. If that day comes, I hope you’ll keep supporting this little project. Thanks for giving it a home. ♡
+Made by **Young Boy Studio** · [@hotrungnhan](https://github.com/hotrungnhan). Some assets may become paid in the future. Thank you for supporting this little project. ♡
 
 ## Install
 
-Get the installer for your platform from [GitHub Releases](https://github.com/hotrungnhan/oc-pet-website/releases). macOS and Windows releases may have different versions; the website finds the newest published installer for each platform.
+Get the latest installer from [Releases](https://github.com/hotrungnhan/oc-pet-website/releases). On macOS, open the `.dmg` and drag OC Pet into Applications. On Windows, run the `-setup.exe` installer. macOS builds are unsigned and not notarized; Windows hardware validation is ongoing.
 
-- **macOS:** open the `.dmg` and drag OC Pet into Applications. Builds are unsigned and not notarized; review the release notes before installing.
-- **Windows:** run the `-setup.exe` installer. Saved pets are retained on uninstall.
-
-These are development builds. Windows hardware validation is still in progress. Report problems with your app version and operating system in Issues.
+File drops move files to Trash / Recycle Bin by default. Turn off file cleanup in Config to keep originals.
 
 ## Website development
 
@@ -51,11 +46,11 @@ npm run preview
 
 Website content is in `src/main.tsx`, styling in `src/style.css`, and images in `public/images/`. Download discovery is in `src/releases.ts`. It reads GitHub’s public releases API without credentials, excludes drafts/prereleases, and selects installers independently per platform. Responses and ETags are cached in localStorage for 15 minutes. Expired entries are revalidated with If-None-Match; saved downloads remain usable if GitHub is offline or rate limited. Checks run on page load, every 15 minutes while visible, and when the browser regains focus or goes online. If storage is blocked, downloads still work without caching. Without cached data, failures fall back to the Releases page.
 
-The layout uses Tailwind CSS 4 through `@tailwindcss/vite`, following the [current Vite setup](https://tailwindcss.com/docs/installation/using-vite). Theme colors are CSS variables in `src/style.css`. Dark mode follows the system on first visit; the theme toggle persists the visitor’s preference. The compact landing page puts an OS-aware split download button in the hero. Its chevron lists other platforms. Linux/mobile/unknown platforms show Unsupported while retaining the platform menu. Supported platforms without a published installer show Coming soon rather than an invented download URL. English/Vietnamese copy is in `src/i18n.ts`; the language selector persists the choice and keeps it in navigation URLs. OS detection is in `src/platform.ts`.
+The layout uses Tailwind CSS 4 through `@tailwindcss/vite`, following the [current Vite setup](https://tailwindcss.com/docs/installation/using-vite). Theme colors are CSS variables in `src/style.css`. Dark mode follows the system on first visit; the theme toggle persists the visitor’s preference. The landing page includes an animated pet demo with 15 actual skin previews and pet/feed/play reactions, plus a three-image gallery of real macOS app captures with an accessible native-dialog lightbox. Motion respects the reduced-motion preference. An OS-aware split download button sits in the hero. Its chevron lists other platforms. Linux/mobile/unknown platforms show Unsupported while retaining the platform menu. Supported platforms without a published installer show Coming soon rather than an invented download URL. English/Vietnamese copy is in `src/i18n.ts`; the language selector persists the choice and keeps it in navigation URLs. OS detection is in `src/platform.ts`.
 
 ## GitHub Pages
 
-Pushes to `main` run `.github/workflows/deploy.yml`: install locked dependencies, test release selection, build the site, and deploy `dist/` to GitHub Pages. Pages must use **GitHub Actions** as its publishing source. `vite.config.js` sets the project path to `/oc-pet-website/`; update it and the metadata in `index.html` if you rename the repository or add a custom domain.
+Pushes to `main` run `.github/workflows/deploy.yml`: install locked dependencies, test release selection, build the site, and deploy `dist/` to GitHub Pages. Pages must use **GitHub Actions** as its publishing source. `vite.config.ts` sets the project path to `/oc-pet-website/`; update it and the metadata in `index.html` if you rename the repository or add a custom domain.
 
 Deployment follows [Vite’s GitHub Pages guide](https://vite.dev/guide/static-deploy#github-pages) and [GitHub’s custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
